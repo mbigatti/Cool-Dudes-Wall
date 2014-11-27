@@ -1,3 +1,90 @@
+<?php
+	ini_set('display_errors', 1);
+	require_once('TwitterAPIExchange.php');
+	include 'function.resize.php';
+
+	$settings = parse_ini_file('configuration.ini');
+	$page_title = $settings['page_title'];
+	$screen_names = $settings['screen_names'];
+	
+	if (!empty($_GET['t'])) {
+		$page_title = $_GET['t'];
+	}
+	if (!empty($_GET['n'])) {
+		$screen_names = $_GET['n'];
+	}
+	
+	//
+	// check if a new call to Twitter API is required
+	//
+	$perform_call = true;
+	$cache_file_name = './cache/lookup-'.md5($screen_names).'.json';
+	if (file_exists($cache_file_name)) {	
+		$stats = stat($cache_file_name);
+		$elapsed = time() - $stats['mtime'];
+		
+		if ($elapsed < 60 * 60) {
+			$perform_call = false;
+		}
+	}
+	
+	if ($perform_call) {
+		//
+		// obtains dudes info
+		//	
+		$url = 'https://api.twitter.com/1.1/users/lookup.json';
+		$getfield = '?screen_name='.$screen_names;
+		$requestMethod = 'GET';
+		$twitter = new TwitterAPIExchange($settings);
+		$original_data = $twitter->setGetfield($getfield)
+								 ->buildOauth($url, $requestMethod)
+								 ->performRequest();
+
+		//
+		// write cache file
+		//								 
+		$fileHandle = fopen($cache_file_name, 'w') OR die ("Can't write cache file\n");
+		fwrite ($fileHandle, $original_data);
+		
+	} else {
+		//
+		// read cache file
+		//
+		$fileHandle = fopen($cache_file_name, 'r') OR die ("Can't read cache file\n");
+		$original_data = fread($fileHandle, filesize($cache_file_name));
+	}
+	fclose ($fileHandle);
+	
+	$data = json_decode($original_data);
+	
+	//
+	// sort cards by follower count
+	//
+	function cmp($a, $b) {
+		return $b->followers_count - $a->followers_count;
+	}
+	
+	uasort($data, 'cmp');
+	
+	//
+	// validate path structure for cache dirs
+	//
+	$dirs = array('cache', 'cache/remote');
+	foreach($dirs as $dir) {
+		$end_dir = dirname(__FILE__) . DIRECTORY_SEPARATOR . $dir;
+		if(!is_dir($end_dir)) {
+			echo "<p><em>Hint: If this page looks broken, you probably need to 'mkdir -m 777 -p $end_dir</em></p>";
+		}
+	}
+	
+	date_default_timezone_set("Europe/Amsterdam");
+	$settings = array('w'=>300, 'h'=>125);
+	
+	function __isset($key)
+	{
+		return isset($this->vars[$key]);
+	}		
+?>
 <html>
 <head>
 	<meta name="keywords" content="" />
@@ -36,7 +123,7 @@
 			text-align: center;
 			color: #607d8b;
 			margin: 60px 0 0 0;
-			padding: 0;
+			padding: 0 20px;
 		}
 		
 		h2 {
@@ -46,7 +133,7 @@
 			text-align: center;			
 			color: #90A4AE;
 			margin: 30px 20px 60px 20px;
-			padding: 0;
+			padding: 0 20px;
 		}
 		
 		body {
@@ -202,95 +289,16 @@
 	</style>
 </head>
 <body>
-<h1 class="animated bounceInDown">Cool Dudes Wall</h1>
+<h1 class="animated bounceInDown"><?php echo $page_title; ?></h1>
 <h2>Data from Twitter - dudes sorted by followers count</h2>
 <div class="wrapper">
 	<div class="container">
 <?php
-	ini_set('display_errors', 1);
-	require_once('TwitterAPIExchange.php');
-	include 'function.resize.php';
-
-	$settings = parse_ini_file('configuration.ini');
-
-	//
-	// check if a new call to Twitter API is required
-	//
-	$perform_call = true;
-	$cache_file_name = './cache/lookup-cache.json';
-	if (file_exists($cache_file_name)) {	
-		$stats = stat($cache_file_name);
-		$elapsed = time() - $stats['mtime'];
-		
-		if ($elapsed < 60 * 60) {
-			$perform_call = false;
-		}
-	}
-	
-	if ($perform_call) {
-		//
-		// obtains dudes info
-		//	
-		$url = 'https://api.twitter.com/1.1/users/lookup.json';
-		$getfield = '?screen_name='.$settings['screen_names'];
-		$requestMethod = 'GET';
-		$twitter = new TwitterAPIExchange($settings);
-		$original_data = $twitter->setGetfield($getfield)
-								 ->buildOauth($url, $requestMethod)
-								 ->performRequest();
-
-		//
-		// write cache file
-		//								 
-		$fileHandle = fopen($cache_file_name, 'w') OR die ("Can't write cache file\n");
-		fwrite ($fileHandle, $original_data);
-		
-	} else {
-		//
-		// read cache file
-		//
-		$fileHandle = fopen($cache_file_name, 'r') OR die ("Can't read cache file\n");
-		$original_data = fread($fileHandle, filesize($cache_file_name));
-	}
-	fclose ($fileHandle);
-	
-	$data = json_decode($original_data);
-	
-	//
-	// sort cards by follower count
-	//
-	function cmp($a, $b) {
-		return $b->followers_count - $a->followers_count;
-	}
-	
-	uasort($data, 'cmp');
-	
-	//
-	// validate path structure for cache dirs
-	//
-	$dirs = array('cache', 'cache/remote');
-	foreach($dirs as $dir) {
-		$end_dir = dirname(__FILE__) . DIRECTORY_SEPARATOR . $dir;
-		if(!is_dir($end_dir)) {
-			echo "<p><em>Hint: If this page looks broken, you probably need to 'mkdir -m 777 -p $end_dir</em></p>";
-		}
-	}
-	
-	date_default_timezone_set("Europe/Amsterdam");
-	$settings = array('w'=>300, 'h'=>125);
-	
-	function __isset($key)
-	{
-		return isset($this->vars[$key]);
-	}	
-	
 	//
 	// render cards
 	//
 	foreach ($data as $record) {
-		$url = $record->entities->url->urls[0]->expanded_url;
 		$url = 'https://twitter.com/'.$record->screen_name;
-		//$image_url = isset($record->profile_banner_url) ? $record->profile_banner_url : $record->profile_background_image_url;
 		if (isset($record->profile_banner_url)) {
 			$image_url = $record->profile_banner_url;
 		} else {
