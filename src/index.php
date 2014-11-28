@@ -6,12 +6,16 @@
 	$settings = parse_ini_file('configuration.ini');
 	$page_title = $settings['page_title'];
 	$screen_names = $settings['screen_names'];
+	$show_banner = $settings['show_banner'];
 	
 	if (!empty($_GET['t'])) {
 		$page_title = $_GET['t'];
 	}
 	if (!empty($_GET['n'])) {
 		$screen_names = $_GET['n'];
+	}
+	if (!empty($_GET['b'])) {
+		$show_banner = ($_GET['b'] === 'true');
 	}
 	
 	//
@@ -78,226 +82,15 @@
 	}
 	
 	date_default_timezone_set("Europe/Amsterdam");
-	$settings = array('w'=>300, 'h'=>125);
 	
 	function __isset($key)
 	{
 		return isset($this->vars[$key]);
 	}		
-?>
-<html>
-<head>
-	<meta name="keywords" content="" />
-	<meta name="description" content="A page full of cool dudes" />
-	<meta name="author" content="Massimiliano Bigatti" />
-	<meta name="copyright" content="&copy; Copyright 2014 Massimiliano Bigatti" />
-	<meta name="viewport" content="width=device-width">
 	
-	<title>Cool Dudes Wall</title>
-
-	<link href="http://fonts.googleapis.com/css?family=Montserrat:400|Open+Sans:300,400,600" rel="stylesheet" type="text/css">
-	<link href='http://fonts.googleapis.com/css?family=Abril+Fatface' rel='stylesheet' type='text/css'>
-
-	<link href="../css/animate.min.css" rel="stylesheet" type="text/css">
-	<link href="../css/normalize.css" rel="stylesheet" type="text/css">
+	function render_card($show_banner, $record) {
+		$settings = array('w'=>300, 'h'=>125);
 	
-	<link rel="shortcut icon" href="/images/favicon/favicon.ico" type="image/x-icon" />
-	<link rel="apple-touch-icon" href="/images/favicon/apple-touch-icon.png" />
-	<link rel="apple-touch-icon" sizes="57x57" href="/images/favicon/apple-touch-icon-57x57.png" />
-	<link rel="apple-touch-icon" sizes="72x72" href="/images/favicon/apple-touch-icon-72x72.png" />
-	<link rel="apple-touch-icon" sizes="76x76" href="/images/favicon/apple-touch-icon-76x76.png" />
-	<link rel="apple-touch-icon" sizes="114x114" href="/images/favicon/apple-touch-icon-114x114.png" />
-	<link rel="apple-touch-icon" sizes="120x120" href="/images/favicon/apple-touch-icon-120x120.png" />
-	<link rel="apple-touch-icon" sizes="144x144" href="/images/favicon/apple-touch-icon-144x144.png" />
-	<link rel="apple-touch-icon" sizes="152x152" href="/images/favicon/apple-touch-icon-152x152.png" />
-
-	<style>
-		html {
-			font-family: "Open sans", sans-serif;
-		}
-		
-		h1 {
-			font-family: "Abril Fatface", sans-serif;
-			font-size: 72px;
-			line-height: 1em;
-			text-align: center;
-			color: #607d8b;
-			margin: 60px 0 0 0;
-			padding: 0 20px;
-		}
-		
-		h2 {
-			font-family: "Montserrat", sans-serif;
-			font-weight: normal;
-			font-size: 18px;
-			text-align: center;			
-			color: #90A4AE;
-			margin: 30px 20px 60px 20px;
-			padding: 0 20px;
-		}
-		
-		body {
-			background-color: #f0f0f0;
-		}
-		
-		a, a:visited {
-			color: #607d8b;
-			text-decoration: none;
-		}
-		
-		a:hover {
-			color: #90A4AE;
-			
-			-o-transition: color 250ms ease-in-out;
-			-ms-transition: color 250ms ease-in-out;
-			-moz-transition: color 250ms ease-in-out;
-			-webkit-transition: color 250ms ease-in-out;
-			transition: color 250ms ease-in-out;
-		}
-		
-		.wrapper {
-			text-align: center;
-		}
-		
-		.container {
-			margin: 0 auto;
-		}
-		
-		.card {
-			display: inline-block;
-			vertical-align: top;
-			
-			width: 300px;
-			margin: 20px;
-			
-			border: 1px solid #bbbbbb;
-			background-color: white;
-			
-			-moz-box-shadow:    0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-			-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-			box-shadow: 		0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-			
-			-webkit-border-radius: 2px;
-			-moz-border-radius: 2px;
-			border-radius: 2px;			
-		}
-		
-		.image {
-			width: 300px;
-			height: 125px;
-		}
-		
-		.contents {
-			margin-top: -70px;
-			padding: 20px;
-		}
-		
-		.avatar {
-			display: block;
-			text-align: center;
-			padding: 10px 10px 10px 10px;
-			margin-bottom: 10px;
-		}
-		
-		.avatar img {
-			-moz-border-radius: 50%; 
-			-webkit-border-radius: 50%; 
-			border-radius: 50%;	
-			
-			border: 2px solid #607d8b;		
-			
-			-webkit-transform: scale(0.95,0.95);
-			-webkit-transition-timing-function: ease-out;
-			-webkit-transition-duration: 250ms;
-
-			-moz-transform: scale(0.95,0.95);
-			-moz-transition-timing-function: ease-out;
-			-moz-transition-duration: 250ms;	
-
-			-o-transform: scale(0.95,0.95);
-			-o-transition-timing-function: ease-out;
-			-o-transition-duration: 250ms;	
-
-			-ms-transform: scale(0.95,0.95);
-			-ms-transition-timing-function: ease-out;
-			-ms-transition-duration: 250ms;	
-
-			transform: scale(0.95,0.95);
-			transition-timing-function: ease-out;
-			transition-duration: 250ms;				
-		}
-		
-		.avatar img:hover {
-			border-color: #90A4AE;
-			
-			-webkit-transform: scale(1,1) rotate(5deg);
-			-webkit-transition-timing-function: ease-out;
-			-webkit-transition-duration: 250ms;
-	
-			-moz-transform: scale(1,1) rotate(5deg);
-			-moz-transition-timing-function: ease-out;
-			-moz-transition-duration: 250ms;
-	
-			-o-transform: scale(1,1) rotate(5deg);
-			-o-transition-timing-function: ease-out;
-			-o-transition-duration: 250ms;
-	
-			-ms-transform: scale(1,1) rotate(5deg);
-			-ms-transition-timing-function: ease-out;
-			-ms-transition-duration: 250ms;
-	
-			transform: scale(1,1) rotate(5deg);
-			transition-timing-function: ease-out;
-			transition-duration: 250ms;
-		}
-		
-		.name {
-			font-size: 22px;
-			font-weight: bold;
-			text-align: center;
-			margin-bottom: 10px;
-		}
-		
-		.description {
-			font-size: 16px;
-			color: #666666;
-			text-align: center;
-			
-			line-height: 1.2em;
-			margin-bottom: 20px;
-			
-			padding-left: 20px;
-			padding-right: 20px;
-		}
-		
-		.followers {
-			font-family: "Montserrat", sans-serif;
-			font-size: 12px;
-			text-transform: uppercase;
-			color: #999999;
-			text-align: center;
-			margin-bottom: 15px;
-		}
-		
-		.footer {
-			font-size: 14px;
-			color: #999999;
-			margin: 40px 0;
-			padding: 0 20px;
-			text-align: center;
-		}
-	</style>
-</head>
-<body>
-<h1 class="animated bounceInDown"><?php echo $page_title; ?></h1>
-<h2>Data from Twitter - dudes sorted by followers count</h2>
-<div class="wrapper">
-	<div class="container">
-<?php
-	//
-	// render cards
-	//
-	foreach ($data as $record) {
 		$url = 'https://twitter.com/'.$record->screen_name;
 		if (isset($record->profile_banner_url)) {
 			$image_url = $record->profile_banner_url;
@@ -306,11 +99,13 @@
 		}
 		
 		echo '<div class="card">';
-			echo '<div class="image" style="background-color: '.$record->profile_link_color.'">';
-			if ($image_url != null) {
-				echo '<img src="' . resize($image_url, $settings) . '"/>';
+			if ($show_banner) {
+				echo '<div class="image" style="background-color: '.$record->profile_link_color.'">';
+				if ($image_url != null) {
+					echo '<img src="' . resize($image_url, $settings) . '"/>';
+				}
+				echo '</div>';
 			}
-			echo '</div>';
 			echo '<div class="contents">';
 				echo '<a class="avatar" href="' . $url . '" target="_blank">';
 					echo '<img src="' . str_replace('normal', 'bigger', $record->profile_image_url) . '"/>';
@@ -324,10 +119,68 @@
 				echo $record->description;
 				echo '</div>';
 				echo '<div class="followers">';
-				echo 'Followers: ' . number_format($record->followers_count, 0, ',', '.');
+				if ($record->followers_count == 0) {
+					echo 'No followers';
+				} else {
+					echo 'Followers: ' . number_format($record->followers_count, 0, ',', '.');
+				}
 				echo '</div>';
 			echo '</div>';
 		echo '</div>';
+	}
+?>
+<html>
+<head>
+	<meta name="keywords" content="" />
+	<meta name="description" content="A page full of cool dudes" />
+	<meta name="author" content="Massimiliano Bigatti" />
+	<meta name="copyright" content="&copy; Copyright 2014 Massimiliano Bigatti" />
+	<meta name="viewport" content="width=device-width">
+	
+	<title><?php echo $page_title; ?></title>
+
+	<link href="http://fonts.googleapis.com/css?family=Montserrat:400|Open+Sans:300,400,600" rel="stylesheet" type="text/css">
+	<link href='http://fonts.googleapis.com/css?family=Abril+Fatface' rel='stylesheet' type='text/css'>
+
+	<link href="../css/animate.min.css" rel="stylesheet" type="text/css">
+	<link href="../css/normalize.css" rel="stylesheet" type="text/css">
+	<link href="cooldudes.css" rel="stylesheet" type="text/css">
+	
+	<link rel="shortcut icon" href="/images/favicon/favicon.ico" type="image/x-icon" />
+	<link rel="apple-touch-icon" href="/images/favicon/apple-touch-icon.png" />
+	<link rel="apple-touch-icon" sizes="57x57" href="/images/favicon/apple-touch-icon-57x57.png" />
+	<link rel="apple-touch-icon" sizes="72x72" href="/images/favicon/apple-touch-icon-72x72.png" />
+	<link rel="apple-touch-icon" sizes="76x76" href="/images/favicon/apple-touch-icon-76x76.png" />
+	<link rel="apple-touch-icon" sizes="114x114" href="/images/favicon/apple-touch-icon-114x114.png" />
+	<link rel="apple-touch-icon" sizes="120x120" href="/images/favicon/apple-touch-icon-120x120.png" />
+	<link rel="apple-touch-icon" sizes="144x144" href="/images/favicon/apple-touch-icon-144x144.png" />
+	<link rel="apple-touch-icon" sizes="152x152" href="/images/favicon/apple-touch-icon-152x152.png" />
+</head>
+<body>
+<h1 class="animated bounceInDown"><?php echo $page_title; ?></h1>
+<h2>Data from Twitter - dudes sorted by followers count</h2>
+<div class="wrapper">
+	<div class="container">
+<?php
+	//
+	// render cards
+	//
+	$rendered_screen_names = array();
+	foreach ($data as $record) {
+		render_card($show_banner, $record);
+		$rendered_screen_names[] = strtolower($record->screen_name);
+	}
+	foreach(preg_split("/[,]+/", $screen_names) as $screen_name) {
+		if (!in_array(strtolower($screen_name), $rendered_screen_names)) {
+			$record = new stdClass(); 
+			$record->screen_name = $screen_name;
+			$record->profile_link_color = '#eeeeee';
+			$record->profile_image_url = 'http://cl.ly/image/0z3Z2E1p3k20/Empty%20Avatar.png';
+			$record->name = $screen_name;
+			$record->description = '';
+			$record->followers_count = 0;
+			render_card($show_banner, $record);
+		}
 	}
 ?>
 	</div>

@@ -9,11 +9,13 @@ Live on my site at [Cool Dudes Wall](http://bigatti.it/cooldudes/) page.
 ## Features
 
 - responsive design, scales from desktop to mobile;
+- two designs: with and without banner image (configurable);
 - get live data from Twitter using Twitter 1.1 REST API;
 - sort cards by follower count;
 - caching of Twitter data;
 - automatic banner caching, resizing and blurring;
-- CSS animation (title drop in and avatar pop and rotation).
+- CSS animations (title drop in and avatar pop and rotation);
+- accepts parameters for page title, screen names and show/hide banner to create dynamic pages;
 
 ### Cache
 

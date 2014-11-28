@@ -1,6 +1,6 @@
 <?php
 /**
- * function by Wes Edling .. http://joedesigns.com
+ * based on a function by Wes Edling .. http://joedesigns.com
  * feel free to use this in any project, i just ask for a credit in the source code.
  * a link back to my site would be nice too.
  *
@@ -26,13 +26,17 @@
  */
 function resize($imagePath,$opts=null){
 	$imagePath = urldecode($imagePath);
+	
 	# start configuration
 	$cacheFolder = './cache/'; # path to your cache folder, must be writeable by web server
 	$remoteFolder = $cacheFolder.'remote/'; # path to the folder you wish to download remote images into
 
-	$defaults = array('crop' => false, 'scale' => 'false', 'thumbnail' => false, 'maxOnly' => false, 
-	   'canvas-color' => 'transparent', 'output-filename' => false, 
-	   'cacheFolder' => $cacheFolder, 'remoteFolder' => $remoteFolder, 'quality' => 90, 'cache_http_minutes' => 20);
+	$defaults = array(
+		'output-filename' => false, 
+		'cacheFolder' => $cacheFolder, 
+		'remoteFolder' => $remoteFolder, 
+		'quality' => 90, 
+		'cache_http_minutes' => 20);
 
 	$opts = array_merge($defaults, $opts);    
 
@@ -112,6 +116,7 @@ function resize($imagePath,$opts=null){
 
 	if($create == true):
 		$requested_ratio = $w / $h;
+		
 		list($width,$height) = getimagesize($imagePath);
 		$image_ratio = $width / $height;
 		
@@ -123,19 +128,23 @@ function resize($imagePath,$opts=null){
 			
 		$crop = $w.'x'.$h.'+0+0';
 		
+		function run_command($cmd) {
+			$c = exec($cmd, $output, $return_code);
+			if($return_code == 0) {
+				return true;
+			} else {
+				error_log("Tried to execute : $cmd, return code: $return_code, output: " . print_r($output, true));
+				return false;
+			}
+		}
+		
 		$cmd = $path_to_convert." ".escapeshellarg($imagePath)." -resize ".$resize." -quality ". escapeshellarg($opts['quality'])." /tmp/temp.jpg"; 
-		$c = exec($cmd, $output, $return_code);
-		error_log($cmd);
-        if($return_code != 0) {
-            error_log("Tried to execute : $cmd, return code: $return_code, output: " . print_r($output, true));
+        if(!run_command($cmd)) {
             return false;
 		}
 		
-		$cmd = $path_to_convert." /tmp/temp.jpg -gravity center -crop ".$crop." "." -quality ". escapeshellarg($opts['quality'])." ".escapeshellarg($newPath); 
-		$c = exec($cmd, $output, $return_code);
-		error_log($cmd);
-        if($return_code != 0) {
-            error_log("Tried to execute : $cmd, return code: $return_code, output: " . print_r($output, true));
+		$cmd = $path_to_convert." /tmp/temp.jpg -gravity center -blur 5x3 -crop ".$crop." "." -quality ". escapeshellarg($opts['quality'])." ".escapeshellarg($newPath); 
+        if(!run_command($cmd)) {
             return false;
 		}
 	endif;
