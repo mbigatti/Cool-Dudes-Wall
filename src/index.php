@@ -4,19 +4,17 @@
 	include 'function.resize.php';
 
 	$settings = parse_ini_file('configuration.ini');
-	$page_title = $settings['page_title'];
-	$screen_names = $settings['screen_names'];
-	$show_banner = $settings['show_banner'];
 	
-	if (!empty($_GET['t'])) {
-		$page_title = $_GET['t'];
+	if (empty($_GET['k']) || !file_exists($_GET['k'].'.ini')) {
+		$page_key = '25613ac0b82d0ef7b17a1d4a651e171a';
+	} else {
+		$page_key = $_GET['k'];
 	}
-	if (!empty($_GET['n'])) {
-		$screen_names = $_GET['n'];
-	}
-	if (!empty($_GET['b'])) {
-		$show_banner = ($_GET['b'] === 'true');
-	}
+	
+	$page_settings = parse_ini_file($page_key.'.ini');
+	$page_title = $page_settings['page_title'];
+	$screen_names = $page_settings['screen_names'];
+	$show_banner = $page_settings['show_banner'];
 	
 	//
 	// check if a new call to Twitter API is required
@@ -176,6 +174,7 @@
 			$record->screen_name = $screen_name;
 			$record->profile_link_color = '#eeeeee';
 			$record->profile_image_url = 'http://cl.ly/image/0z3Z2E1p3k20/Empty%20Avatar.png';
+			//$record->profile_image_url = 'http://avatar.3sd.me/73';
 			$record->name = $screen_name;
 			$record->description = '';
 			$record->followers_count = 0;

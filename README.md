@@ -15,10 +15,9 @@ Live on my site at [Cool Dudes Wall](http://bigatti.it/cooldudes/) page.
 - caching of Twitter data;
 - automatic banner caching, resizing and blurring;
 - CSS animations (title drop in and avatar pop and rotation);
-- accepts parameters for page title, screen names and show/hide banner to create dynamic pages;
+- accepts parameter for display a custom page preconfigured in the system;
 
 ### Cache
-
 Twitter data lookup is cached and refreshed once in an hour. Banner images are cached and post-processed when they change; they are checked at every page reload.
 
 ### Visual Design
